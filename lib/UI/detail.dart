@@ -1,20 +1,24 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:test_klaizar_android/UI/detail_widget_builder.dart';
-
-import '../Data/item.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
+import '../Logic/firebase_worker.dart';
+import '../Data/text_fields_controllers.dart';
+import '../UI/detail_widget_builder.dart';
+import '../Data/master_item.dart';
 
 class Detail extends StatelessWidget {
-  Detail({@required this.item, @required this.isMobileLayout});
+  Detail(
+      {@required this.item,
+      @required this.isMobileLayout,
+      @required this.controllers});
 
-  final Item item;
+  final MasterItem item;
   final bool isMobileLayout;
+  final TextFieldsControllers controllers;
+  final FBWorker fbWorker = FBWorker();
 
   @override
   Widget build(BuildContext context) {
     final TextTheme textTheme = Theme.of(context).textTheme;
-    dynamic list = DetailWidgetBuilder.buildWidget(context, item);
 
     return Scaffold(
         appBar: AppBar(
@@ -32,35 +36,46 @@ class Detail extends StatelessWidget {
               ),
               Expanded(
                 flex: 1,
-                child: list,
+                child:
+                    DetailWidgetBuilder.buildWidget(context, item, controllers),
               ),
-              item != null && item.withButton
+              item != null && item.withCreateButton
                   ? IconButton(
                       icon: Icon(Icons.create),
                       color: Colors.purpleAccent,
                       tooltip: 'Create',
                       iconSize: 35.0,
-                      onPressed: () => mainButtonPressed(item, list),
+                      onPressed: () =>
+                          createButtonOnPressed(item, controllers, context),
                     )
                   : Container(),
             ],
           ),
         ));
   }
-}
 
-Future<void> mainButtonPressed(Item item, ListView list) {
-  switch (item.title) {
-    case 'Create User':
-      CollectionReference users = Firestore.instance.collection('users');
-      return users.add({
-        'User Name': 'sdfsdfsdfsdf',
-        'Registration date': Timestamp.fromMillisecondsSinceEpoch(
-                DateTime.now().millisecondsSinceEpoch),
-        'Last event': '-',
-        'City': 'sdfkjsl',
-        'Age': 44
-      });
-      break;
+  void createButtonOnPressed(MasterItem item, TextFieldsControllers controllers,
+      BuildContext context) async {
+    switch (item.title) {
+      case 'Create User':
+        try {
+          await fbWorker.createUser(controllers);
+          controllers.clearTextFieldsControllers();
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text('user created'),
+              );
+            },
+          );
+        } catch (e) {
+          print(e.toString());
+          controllers.ageController.text = 'enter a number';
+        }
+        break;
+      case 'Create Event':
+        break;
+    }
   }
 }

@@ -9,7 +9,8 @@ class UserRecord {
   final int age;
   final DocumentReference reference;
 
-  UserRecord.fromMap(Map<String, dynamic> map, String documentId, {this.reference})
+  UserRecord.fromMap(Map<String, dynamic> map, String documentId,
+      {this.reference})
       : assert(map['User Name'] != null),
         assert(map['Registration date'] != null),
         assert(map['Last event'] != null),
@@ -17,13 +18,14 @@ class UserRecord {
         assert(map['Age'] != null),
         id = documentId,
         userName = map['User Name'],
-        registrationDate = new DateTime.fromMillisecondsSinceEpoch(map['Registration date'].hashCode * 1000),
+        registrationDate = (map['Registration date'] as Timestamp).toDate(),
         lastEvent = map['Last event'],
         city = map['City'],
         age = map['Age'];
 
   UserRecord.fromSnapshot(DocumentSnapshot snapshot)
-      : this.fromMap(snapshot.data, snapshot.documentID, reference: snapshot.reference);
+      : this.fromMap(snapshot.data, snapshot.documentID,
+            reference: snapshot.reference);
 
   @override
   String toString() => "Record<$id:$userName>";

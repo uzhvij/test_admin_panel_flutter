@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import '../Data/text_fields_controllers.dart';
+import '../Data/master_item.dart';
 import 'detail.dart';
-import '../Data/item.dart';
 import 'master.dart';
 
 class MasterDetailContainer extends StatefulWidget {
   @override
-  _MasterDetailContainerState createState() => _MasterDetailContainerState();
+  MasterDetailContainerState createState() => MasterDetailContainerState();
 }
 
-class _MasterDetailContainerState extends State<MasterDetailContainer> {
-  Item _selectedItem;
+class MasterDetailContainerState extends State<MasterDetailContainer> {
+  MasterItem selectedItem;
   var isMobileLayout;
 
   @override
@@ -18,12 +19,12 @@ class _MasterDetailContainerState extends State<MasterDetailContainer> {
     isMobileLayout = shortestSide < 600;
 
     if (isMobileLayout) {
-      return _buildMobileLayout();
+      return buildMobileLayout();
     }
-    return _buildWebLayout();
+    return buildWebLayout();
   }
 
-  Widget _buildMobileLayout() {
+  Widget buildMobileLayout() {
     return Master(
       itemSelectedCallback: (item) {
         Navigator.push(
@@ -32,6 +33,8 @@ class _MasterDetailContainerState extends State<MasterDetailContainer> {
               builder: (_) => Detail(
                     item: item,
                     isMobileLayout: isMobileLayout,
+                    controllers:
+                        item.withCreateButton ? TextFieldsControllers() : null,
                   )),
         );
       },
@@ -39,7 +42,7 @@ class _MasterDetailContainerState extends State<MasterDetailContainer> {
     );
   }
 
-  Widget _buildWebLayout() {
+  Widget buildWebLayout() {
     return Row(
       children: <Widget>[
         Flexible(
@@ -47,7 +50,7 @@ class _MasterDetailContainerState extends State<MasterDetailContainer> {
           child: Master(
             itemSelectedCallback: (item) {
               setState(() {
-                _selectedItem = item;
+                selectedItem = item;
               });
             },
             isMobileLayout: isMobileLayout,
@@ -56,8 +59,11 @@ class _MasterDetailContainerState extends State<MasterDetailContainer> {
         Flexible(
           flex: 5,
           child: Detail(
-            item: _selectedItem,
+            item: selectedItem,
             isMobileLayout: isMobileLayout,
+            controllers: (selectedItem?.withCreateButton ?? false)
+                ? TextFieldsControllers()
+                : null,
           ),
         ),
       ],
